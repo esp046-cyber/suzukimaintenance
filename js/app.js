@@ -52,9 +52,24 @@ $('#btnScan').onclick=async()=>{const msg=$('#vinMsg');if(!('BarcodeDetector' in
  const det=new BarcodeDetector({formats:['code_39','code_128','data_matrix','qr_code']});const stop=()=>{s.getTracks().forEach(t=>t.stop());v.hidden=true};
  const tick=async()=>{if(v.hidden)return;try{const c=await det.detect(v);const raw=c.map(x=>x.rawValue).find(x=>x.length>=17);if(raw){stop();const vin=raw.slice(-17).toUpperCase();$('#vin').value=vin;return decode(vin)}}catch{}requestAnimationFrame(tick)};tick();$('#dlgVehicle').addEventListener('close',stop,{once:true})}
  catch{msg.textContent='Camera access was blocked. Allow it in browser settings or type the VIN.'}};
-async function notify(quiet){try{if(!('Notification' in window))return;if(Notification.permission==='default'&&!quiet)await Notification.requestPermission();
- if(Notification.permission!=='granted'||!S.model)return;const d=tasksFor(S.model).filter(t=>status(t).state==='due');
- if(d.length){const reg=await navigator.serviceWorker?.ready;reg?.showNotification('Service overdue',{body:d.map(t=>t.name).join(', '),icon:'assets/icon.svg',tag:'due'})}}catch(e){console.warn(e)}}
+const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const isStandalone=!!(navigator.standalone||matchMedia('(display-mode: standalone)').matches);
+const IOS_MSG="On iPhone, notifications require adding this app to your Home Screen: tap the Share button in Safari, then select 'Add to Home Screen'. Open Suzuki Care from the Home Screen, then try again. Needs iOS 16.4 or later.";
+const say=(id,t)=>{const e=$(id);if(e)e.textContent=t};
+async function notify(quiet){
+ const msg=t=>{if(!quiet)say('#notifyMsg',t)};
+ try{
+  if(isIOS&&!isStandalone){msg(IOS_MSG);if(!quiet)alert(IOS_MSG);return}
+  if(!('Notification' in window)||!('serviceWorker' in navigator))return void msg('Notifications are not supported here. On iPhone use Safari, update to iOS 16.4 or later, and open the app from the Home Screen.');
+  if(Notification.permission==='default'&&!quiet)await Notification.requestPermission();
+  if(Notification.permission==='denied')return void msg('Notifications are blocked. Turn them on in iPhone Settings > Notifications > Suzuki Care.');
+  if(Notification.permission!=='granted')return void msg('Permission not granted yet. Tap Enable service alerts again.');
+  if(!S.model)return void msg('Choose your vehicle first so alerts know what to check.');
+  const reg=await navigator.serviceWorker.ready;const d=tasksFor(S.model).filter(t=>status(t).state==='due');
+  if(d.length){await reg.showNotification('Service overdue',{body:d.map(t=>t.name).join(', '),icon:'assets/icon-192.png',tag:'due'});msg(`Service alerts enabled. Sent a notification for ${d.length} overdue item${d.length>1?'s':''}.`)}
+  else{if(!quiet)await reg.showNotification('Service alerts enabled',{body:'Nothing is overdue right now. We will alert you when something is.',icon:'assets/icon-192.png',tag:'test'});msg('Service alerts enabled. Nothing is overdue right now.')}
+ }catch(e){console.warn(e);msg('Could not show a notification: '+e.message)}
+}
 $('#btnNotify').onclick=()=>notify(false);
 const steps=['Pick your Suzuki with one tap, or scan your VIN.','Set your odometer in Settings so alerts stay accurate.','Tap Done after each service to keep your streak going.'];let si=0;
 $('#obNext').onclick=()=>{si++;if(si>=steps.length){S.onboarded=true;save();$('#dlgOnboard').close()}else $('#obText').textContent=steps[si]};
@@ -72,9 +87,15 @@ function renderExtra(){
  $('#health').innerHTML=`<h2 id="hHealth">Battery health</h2>${svg}<div class="row"><input id="bPct" type="number" min="0" max="100" aria-label="Battery health percent" placeholder="%"><button class="pill" id="bLog">Log reading</button></div>`;
  $('#bLog').onclick=()=>{const v=+$('#bPct').value;if(!(v>=0&&v<=100)||$('#bPct').value==='')return;(S.batt=S.batt||[]).push({m:m.id,km:S.odo,pct:v});save();render()};
 }
-async function pushSub(){const out=$('#pushOut');try{const k=$('#vapid').value.trim();if(!k)return void(out.textContent='Paste your VAPID public key first.');
- const reg=await navigator.serviceWorker.ready;const sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:Uint8Array.from(atob(k.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0))});
- out.textContent=JSON.stringify(sub);}catch(e){out.textContent='Push setup failed: '+e.message}}
+async function pushSub(){const out=$('#pushOut');
+ try{if(isIOS&&!isStandalone){out.textContent=IOS_MSG;return alert(IOS_MSG)}
+ if(!('PushManager' in window)||!('serviceWorker' in navigator))return void(out.textContent='Push is not supported in this browser. On iPhone use Safari on iOS 16.4+, from the Home Screen.');
+ const k=$('#vapid').value.trim();if(!k)return void(out.textContent='Server push needs a VAPID public key from your own push server. Local service alerts work without it: use Enable service alerts.');
+ let key;try{key=Uint8Array.from(atob(k.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0))}catch{return void(out.textContent='That VAPID key is not valid base64url. Copy the public key again.')}
+ if(Notification.permission==='default')await Notification.requestPermission();
+ if(Notification.permission!=='granted')return void(out.textContent='Allow notifications first (iPhone Settings > Notifications > Suzuki Care).');
+ const reg=await navigator.serviceWorker.ready;const sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:key});
+ out.textContent='Subscribed. Copy this to your server: '+JSON.stringify(sub)}catch(e){out.textContent='Push setup failed: '+e.message}}
 $('#btnPush').onclick=pushSub;
 $('#catFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;const t=await f.text();if(loadCatalog(t)){try{localStorage.setItem('suzukicare.catalog',t)}catch{}render();$('#catMsg').textContent='Catalogue imported.'}else $('#catMsg').textContent='Invalid JSON catalogue.'};
 addEventListener('error',e=>console.error('Handled:',e.message));
