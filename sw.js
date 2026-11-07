@@ -1,4 +1,4 @@
-const V='suzuki-care-v4',SHELL=['./','index.html','css/styles.css','js/app.js','js/data.js','js/catalog.js','manifest.json','assets/icon.svg','assets/icon-192.png','assets/icon-512.png','assets/icon-maskable-512.png','assets/og-image.png'];
+const V='suzuki-care-v5',SHELL=['./','index.html','css/styles.css','js/app.js','js/data.js','js/catalog.js','manifest.json','assets/icon.svg','assets/icon-192.png','assets/icon-512.png','assets/icon-maskable-512.png','assets/og-image.png'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(V).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==V).map(x=>caches.delete(x)))).then(()=>clients.claim())));
 self.addEventListener('fetch',e=>{if(e.request.method!=='GET'||new URL(e.request.url).origin!==location.origin)return;

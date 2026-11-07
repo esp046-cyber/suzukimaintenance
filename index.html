@@ -54,8 +54,9 @@
   <label class="check"><input id="haptics" type="checkbox"> Haptic feedback</label>
   <label>Import verified parts catalogue (JSON)<input id="catFile" type="file" accept="application/json"></label><p id="catMsg" class="muted"></p>
   <details><summary>About this data</summary><ul id="disc" class="muted"></ul></details>
-  <label>Push VAPID public key (optional)<input id="vapid" autocomplete="off"></label><button type="button" class="pill ghost" id="btnPush">Subscribe to server push</button><p id="pushOut" class="muted" style="word-break:break-all"></p>
+  <label>Push VAPID public key (optional)<input id="vapid" autocomplete="off"></label><button type="button" class="pill ghost" id="btnPush">Subscribe to server push</button><p id="pushOut" class="muted" role="status" style="word-break:break-all"></p>
   <button type="button" class="pill" id="btnNotify">Enable service alerts</button>
+  <p id="notifyMsg" class="muted" role="status"></p>
   <button class="pill ghost">Done</button></form></dialog>
 
 <dialog id="dlgOnboard"><form method="dialog"><h2>Welcome</h2>
