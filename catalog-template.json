@@ -1,0 +1,13 @@
+{
+ "models": [],
+ "parts": [
+  {
+   "id": "oil",
+   "name": "Engine oil 0W-20",
+   "pn": "REPLACE-WITH-VERIFIED",
+   "price": 0,
+   "spec": "..."
+  }
+ ],
+ "tasks": []
+}
