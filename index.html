@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Suzuki Care 2026</title>
+<meta name="description" content="Zero sign-in maintenance schedules, part numbers and service alerts for 2026 Suzuki vehicles. Works offline.">
+<meta name="theme-color" content="#07090d">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
+<link rel="apple-touch-startup-image" href="assets/splash.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta property="og:title" content="Suzuki Care 2026">
+<meta property="og:description" content="Maintenance schedules, part numbers and service alerts. No sign-in.">
+<meta property="og:image" content="assets/og-image.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="top">
+  <h1>Suzuki Care</h1>
+  <div class="row">
+    <button class="pill" id="btnVehicle" aria-haspopup="dialog">Choose vehicle</button>
+    <button class="pill ghost" id="btnSettings" aria-haspopup="dialog">Settings</button>
+  </div>
+</header>
+<div id="banner" role="alert" hidden></div>
+<main id="main" class="grid" aria-live="polite">
+  <section class="card hero" id="vitals" aria-labelledby="hVitals"></section>
+  <section class="card" id="alerts" aria-labelledby="hAlerts"></section>
+  <section class="card wide" id="schedule" aria-labelledby="hSched"></section>
+  <section class="card" id="fluids" aria-labelledby="hFluids"></section>
+  <section class="card" id="cost" aria-labelledby="hCost"></section>
+  <section class="card" id="health" aria-labelledby="hHealth"></section>
+  <section class="card wide" id="compare" aria-labelledby="hCompare"></section>
+</main>
+
+<dialog id="dlgVehicle"><form method="dialog"><h2>Choose your Suzuki</h2><div id="modelList" class="stack"></div>
+  <hr><label>VIN (17 characters)<input id="vin" maxlength="17" autocomplete="off" autocapitalize="characters"></label>
+  <div class="row"><button type="button" class="pill" id="btnDecode">Decode VIN</button><button type="button" class="pill ghost" id="btnScan">Scan barcode</button></div>
+  <video id="cam" playsinline muted hidden></video><p id="vinMsg" class="muted"></p>
+  <button class="pill ghost">Close</button></form></dialog>
+
+<dialog id="dlgSettings"><form method="dialog"><h2>Settings</h2>
+  <label>Odometer (km)<input id="odo" type="number" min="0" inputmode="numeric"></label>
+  <label>Accent colour<input id="accent" type="color"></label>
+  <label>Labour rate per hour<input id="rate" type="number" min="0"></label>
+  <label>Parts shop URL (use {pn} for part number)<input id="shop" type="url" placeholder="https://your-dealer.example/search?q={pn}"></label>
+  <label class="check"><input id="hc" type="checkbox"> High-contrast mode</label>
+  <label class="check"><input id="haptics" type="checkbox"> Haptic feedback</label>
+  <label>Import verified parts catalogue (JSON)<input id="catFile" type="file" accept="application/json"></label><p id="catMsg" class="muted"></p>
+  <details><summary>About this data</summary><ul id="disc" class="muted"></ul></details>
+  <label>Push VAPID public key (optional)<input id="vapid" autocomplete="off"></label><button type="button" class="pill ghost" id="btnPush">Subscribe to server push</button><p id="pushOut" class="muted" style="word-break:break-all"></p>
+  <button type="button" class="pill" id="btnNotify">Enable service alerts</button>
+  <button class="pill ghost">Done</button></form></dialog>
+
+<dialog id="dlgOnboard"><form method="dialog"><h2>Welcome</h2>
+  <p id="obText"></p><div class="row"><button type="button" class="pill" id="obNext">Next</button><button class="pill ghost">Skip</button></div></form></dialog>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
